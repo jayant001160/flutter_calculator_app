@@ -2,11 +2,22 @@ class CalculatorLogic {
   static String evaluateExpression(String expression) {
     try {
       // Remove invalid characters from the input expression
-      expression = expression.replaceAll(RegExp(r'[^0-9+\-*/.]'), '');
+      expression = expression.replaceAll(RegExp(r'[^0-9+\-*/.\s]'), '').trim();
 
       // Evaluate the basic arithmetic expression
       double result = _evaluateBasicExpression(expression);
-      return result.toString();
+
+      // Check if the result has a fractional part
+      if (result % 1 == 0) {
+        // Return as integer if there's no fractional part
+        return result.toInt().toString();
+      } else {
+        // Return as double with up to 4 decimal places, trimmed
+        return result
+            .toStringAsFixed(4)
+            .replaceAll(RegExp(r'0+$'), '')
+            .replaceAll(RegExp(r'\.$'), '');
+      }
     } catch (e) {
       return 'Invalid Input';
     }
@@ -14,21 +25,11 @@ class CalculatorLogic {
 
   static double _evaluateBasicExpression(String expression) {
     try {
-      // Use a lightweight evaluator for basic arithmetic expressions
-      return _safeEval(expression);
+      // Tokenize and evaluate the expression considering operator precedence
+      final tokens = _tokenize(expression);
+      return _evaluateTokensWithPrecedence(tokens);
     } catch (e) {
       throw Exception('Invalid Arithmetic Expression');
-    }
-  }
-
-  static double _safeEval(String expression) {
-    // Placeholder for evaluating the expression
-    // Replace this with a more robust parser for complex cases if needed
-    try {
-      final tokens = _tokenize(expression);
-      return _evaluateTokens(tokens);
-    } catch (e) {
-      throw Exception('Evaluation Error');
     }
   }
 
@@ -49,6 +50,11 @@ class CalculatorLogic {
           buffer.clear();
         }
         tokens.add(char);
+      } else if (char.trim().isEmpty) {
+        // Skip spaces
+        continue;
+      } else {
+        throw Exception('Unexpected character in expression: $char');
       }
     }
 
@@ -60,30 +66,45 @@ class CalculatorLogic {
     return tokens;
   }
 
-  static double _evaluateTokens(List<String> tokens) {
-    // Simple left-to-right evaluation (does not consider operator precedence)
-    double result = double.parse(tokens[0]);
+  static double _evaluateTokensWithPrecedence(List<String> tokens) {
+    // Apply operator precedence using a two-pass algorithm
+    // 1. Handle multiplication and division first
+    final List<String> intermediateTokens = [];
+    double current = double.parse(tokens[0]);
 
     for (int i = 1; i < tokens.length; i += 2) {
       final operator = tokens[i];
       final operand = double.parse(tokens[i + 1]);
 
-      switch (operator) {
-        case '+':
-          result += operand;
-          break;
-        case '-':
-          result -= operand;
-          break;
-        case '*':
-          result *= operand;
-          break;
-        case '/':
+      if (operator == '*' || operator == '/') {
+        if (operator == '*') {
+          current *= operand;
+        } else {
           if (operand == 0) throw Exception('Division by zero');
-          result /= operand;
-          break;
-        default:
-          throw Exception('Invalid operator');
+          current /= operand;
+        }
+      } else {
+        intermediateTokens.add(current.toString());
+        intermediateTokens.add(operator);
+        current = operand;
+      }
+    }
+
+    // Push the last calculated value
+    intermediateTokens.add(current.toString());
+
+    // 2. Handle addition and subtraction
+    double result = double.parse(intermediateTokens[0]);
+    for (int i = 1; i < intermediateTokens.length; i += 2) {
+      final operator = intermediateTokens[i];
+      final operand = double.parse(intermediateTokens[i + 1]);
+
+      if (operator == '+') {
+        result += operand;
+      } else if (operator == '-') {
+        result -= operand;
+      } else {
+        throw Exception('Unexpected operator: $operator');
       }
     }
 

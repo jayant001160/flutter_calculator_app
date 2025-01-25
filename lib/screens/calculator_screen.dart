@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../widgets/calculator_button.dart';
 import '../utils/calculator_logic.dart';
+import '../bloc/history_cubit.dart'; // Assuming you have a dedicated BLoC folder for state management
 
 class CalculatorScreen extends StatefulWidget {
   @override
@@ -11,21 +13,44 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   String input = '';
   String result = '0';
 
-  void onButtonPressed(String value) {
-    setState(() {
-      if (value == 'C') {
+  void onButtonPressed(String value, BuildContext context) {
+    if (value == 'C') {
+      // Add the calculation to history if there's a result
+      if (input.isNotEmpty && result != '0') {
+        context.read<HistoryCubit>().addCalculation('$input = $result');
+      }else if(input.isNotEmpty && result == '0'){
+        context.read<HistoryCubit>().addCalculation(input);
+      }
+      setState(() {
         input = '';
         result = '0';
-      } else if (value == '=') {
-        try {
-          result = CalculatorLogic.evaluateExpression(input);
-        } catch (e) {
-          result = 'Error';
+      });
+    } else if (value == '=') {
+      try {
+        String evaluatedResult = CalculatorLogic.evaluateExpression(input);
+        setState(() {
+          result = evaluatedResult;
+        });
+        // Add the calculation to history
+        if (input.isNotEmpty) {
+          context.read<HistoryCubit>().addCalculation('$input = $result');
         }
-      } else {
-        input += value;
+      } catch (e) {
+        setState(() {
+          result = 'Error';
+        });
       }
-    });
+    }else if((value == '+'||value == '-'||value == '*'||value == '/')&& result != '0'){
+      setState(() {
+        input = result;
+        input += value;
+        result = '0';
+      });
+    } else {
+      setState(() {
+        input += value;
+      });
+    }
   }
 
   @override
@@ -34,18 +59,46 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Calculate button size dynamically
-            double buttonWidth =
-                constraints.maxWidth / 4 - 16; // 4 columns, 8px margin
+            double buttonWidth = constraints.maxWidth / 4 - 16;
             double buttonHeight = constraints.maxHeight / 4 - 16;
-        
+
             return Column(
               children: [
+                // History Area
+                Expanded(
+                  flex: 2,
+                  child: BlocBuilder<HistoryCubit, List<String>>(
+                    builder: (context, history) {
+                      return Container(
+                        padding: EdgeInsets.all(10),
+                        color: Colors.grey[900],
+                        child: ListView.builder(
+                          reverse: true,
+                          itemCount: history.length,
+                          itemBuilder: (context, index) {
+                            // Access items in reverse order
+                            final reversedIndex = history.length - 1 - index;
+                            return Text(
+                              history[reversedIndex],
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            );
+                          },
+                        ),
+
+                      );
+                    },
+                  ),
+                ),
                 // Display Area
                 Expanded(
+                  flex: 1,
                   child: Container(
                     padding: EdgeInsets.all(20),
                     alignment: Alignment.bottomRight,
+                    color: Colors.black,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -66,50 +119,42 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     ),
                   ),
                 ),
-                // Divider(color: Colors.white),
                 // Button Grid
                 SizedBox(
-                  height: constraints.maxHeight * 0.5,
-                  // Reserve 60% height for buttons
+                  height: constraints.maxHeight * 0.45,
                   child: GridView.count(
                     childAspectRatio: 1.2,
                     crossAxisCount: 4,
-                    // 4 columns
-                    shrinkWrap: true,
                     padding: EdgeInsets.symmetric(vertical: 2, horizontal: 2),
                     children: [
-                      // First row of buttons
                       ...['7', '8', '9', '/'].map(
-                        (e) => CalculatorButton(
+                            (e) => CalculatorButton(
                           label: e,
-                          onPressed: onButtonPressed,
+                          onPressed: (val) => onButtonPressed(val, context),
                           width: buttonWidth,
                           height: buttonHeight,
                         ),
                       ),
-                      // Second row of buttons
                       ...['4', '5', '6', '*'].map(
-                        (e) => CalculatorButton(
+                            (e) => CalculatorButton(
                           label: e,
-                          onPressed: onButtonPressed,
+                          onPressed: (val) => onButtonPressed(val, context),
                           width: buttonWidth,
                           height: buttonHeight,
                         ),
                       ),
-                      // Third row of buttons
                       ...['1', '2', '3', '-'].map(
-                        (e) => CalculatorButton(
+                            (e) => CalculatorButton(
                           label: e,
-                          onPressed: onButtonPressed,
+                          onPressed: (val) => onButtonPressed(val, context),
                           width: buttonWidth,
                           height: buttonHeight,
                         ),
                       ),
-                      // Fourth row of buttons
                       ...['C', '0', '=', '+'].map(
-                        (e) => CalculatorButton(
+                            (e) => CalculatorButton(
                           label: e,
-                          onPressed: onButtonPressed,
+                          onPressed: (val) => onButtonPressed(val, context),
                           width: buttonWidth,
                           height: buttonHeight,
                         ),
