@@ -40,6 +40,17 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           result = 'Error';
         });
       }
+    } else if ((value == '+' ||
+            value == '-' ||
+            value == '%' ||
+            value == '÷' ||
+            value == '×') &&
+        result != '0') {
+      setState(() {
+        input = result;
+        result = '0';
+        input += value;
+      });
     } else {
       setState(() {
         input += value;
