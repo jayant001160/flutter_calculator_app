@@ -18,7 +18,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       // Add the calculation to history if there's a result
       if (input.isNotEmpty && result != '0') {
         context.read<HistoryCubit>().addCalculation('$input = $result');
-      }else if(input.isNotEmpty && result == '0'){
+      } else if (input.isNotEmpty && result == '0') {
         context.read<HistoryCubit>().addCalculation(input);
       }
       setState(() {
@@ -40,7 +40,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           result = 'Error';
         });
       }
-    }else if((value == '+'||value == '-'||value == '*'||value == '/')&& result != '0'){
+    } else if ((value == '+' || value == '-' || value == '*' || value == '/') &&
+        result != '0') {
       setState(() {
         input = result;
         input += value;
@@ -55,9 +56,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.black87,
+        body: LayoutBuilder(
           builder: (context, constraints) {
             double buttonWidth = constraints.maxWidth / 4 - 16;
             double buttonHeight = constraints.maxHeight / 4 - 16;
@@ -71,54 +73,94 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     builder: (context, history) {
                       return Container(
                         padding: EdgeInsets.all(10),
-                        color: Colors.grey[900],
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black87,
+                              Colors.blueGrey.shade800,
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          // borderRadius: BorderRadius.vertical(bottom: Radius.circular(8)),
+                        ),
                         child: ListView.builder(
                           reverse: true,
                           itemCount: history.length,
                           itemBuilder: (context, index) {
                             // Access items in reverse order
                             final reversedIndex = history.length - 1 - index;
-                            return Text(
-                              history[reversedIndex],
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                history[reversedIndex],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             );
                           },
                         ),
-
                       );
                     },
                   ),
                 ),
+                // SizedBox(
+                //   height: constraints.maxHeight * 0.005,
+                // ),
                 // Display Area
                 Expanded(
                   flex: 1,
                   child: Container(
                     padding: EdgeInsets.all(20),
                     alignment: Alignment.bottomRight,
-                    color: Colors.black,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blueGrey.shade800,
+                          Colors.black87,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      // borderRadius:
+                      //     BorderRadius.vertical(top: Radius.circular(8)),
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
                           input,
-                          style: TextStyle(fontSize: 24, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Colors.white70,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                         Text(
                           result,
                           style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: Colors.greenAccent.shade400,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 10,
+                                color: Colors.greenAccent.shade700,
+                                offset: Offset(2, 2),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
+
                 // Button Grid
                 SizedBox(
                   height: constraints.maxHeight * 0.45,
@@ -128,7 +170,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     padding: EdgeInsets.symmetric(vertical: 2, horizontal: 2),
                     children: [
                       ...['7', '8', '9', '/'].map(
-                            (e) => CalculatorButton(
+                        (e) => CalculatorButton(
                           label: e,
                           onPressed: (val) => onButtonPressed(val, context),
                           width: buttonWidth,
@@ -136,7 +178,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         ),
                       ),
                       ...['4', '5', '6', '*'].map(
-                            (e) => CalculatorButton(
+                        (e) => CalculatorButton(
                           label: e,
                           onPressed: (val) => onButtonPressed(val, context),
                           width: buttonWidth,
@@ -144,7 +186,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         ),
                       ),
                       ...['1', '2', '3', '-'].map(
-                            (e) => CalculatorButton(
+                        (e) => CalculatorButton(
                           label: e,
                           onPressed: (val) => onButtonPressed(val, context),
                           width: buttonWidth,
@@ -152,7 +194,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         ),
                       ),
                       ...['C', '0', '=', '+'].map(
-                            (e) => CalculatorButton(
+                        (e) => CalculatorButton(
                           label: e,
                           onPressed: (val) => onButtonPressed(val, context),
                           width: buttonWidth,
