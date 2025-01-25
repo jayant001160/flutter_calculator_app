@@ -1,5 +1,6 @@
 import 'package:calculator_app/screens/calculator_screen.dart';
 import 'package:calculator_app/bloc/history_cubit.dart';
+import 'package:calculator_app/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,7 +18,7 @@ class CalculatorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false, // Hides the debug banner
-      home: CalculatorScreen(),
+      home: Dashboard(),
     );
   }
 }

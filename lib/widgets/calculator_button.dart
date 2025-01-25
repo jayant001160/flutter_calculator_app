@@ -3,52 +3,46 @@ import 'package:flutter/material.dart';
 class CalculatorButton extends StatelessWidget {
   final String label;
   final Function(String) onPressed;
-  final double width;
-  final double height;
+  final bool isOperator;
+  final bool isAccent;
+  final bool isWide;
 
-  CalculatorButton({
+  const CalculatorButton({
+    super.key,
     required this.label,
     required this.onPressed,
-    this.width = 60,
-    this.height = 60,
+    this.isOperator = false,
+    this.isAccent = false,
+    this.isWide = false,
   });
-
-  LinearGradient _getButtonGradient(String label) {
-    if ('0123456789'.contains(label)) {
-      return LinearGradient(
-        colors: [Colors.blueGrey[700]!, Colors.blueGrey[900]!],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    } else if ('+-*/='.contains(label)) {
-      return LinearGradient(
-        colors: [Colors.orange[600]!, Colors.orange[800]!],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      );
-    } else {
-      return LinearGradient(
-        colors: [Colors.blueGrey[600]!, Colors.blueGrey[800]!],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.height;
     return GestureDetector(
       onTap: () => onPressed(label),
       child: Container(
-        margin: EdgeInsets.all(4),
+        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+        width: isWide ? screenWidth * 0.23 : screenWidth * 0.11,
+        // Adjust for wide buttons
+        height: screenHeight * 0.085,
         decoration: BoxDecoration(
-          gradient: _getButtonGradient(label), // Use gradient for decoration
-          borderRadius: BorderRadius.circular(10),
-        ),
+            color: isAccent
+                ? Colors.black
+                : isOperator
+                    ? Colors.orange
+                    : Colors.grey[850],
+            // shape: label=='='?BoxShape.rectangle: BoxShape.circle,
+            borderRadius: BorderRadius.all(Radius.circular(16))),
         child: Center(
           child: Text(
             label,
-            style: TextStyle(fontSize: 36, color: Colors.white),
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: isAccent ? Colors.white : Colors.white70,
+            ),
           ),
         ),
       ),
